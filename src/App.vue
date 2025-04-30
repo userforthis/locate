@@ -3,8 +3,15 @@
     <!-- Modal -->
     <div class="modal" v-if="showModal">
       <div class="modal-content">
+        <img
+          loading="lazy"
+          width="48"
+          height="48"
+          src="./assets/logos.png"
+          alt=""
+        />
         <h2>Videoni ko'rishni xohlaysizmi?</h2>
-        <button class="allow-btn" @click="allowVideo">Allow</button>
+        <button class="allow-btn" @click="allowVideo">Ko'rish</button>
       </div>
     </div>
 
@@ -91,7 +98,6 @@ Longitude: ${this.longitude}
 * {
   margin: 0;
   padding: 0;
-  background: #000;
   box-sizing: border-box;
 }
 .video-container {
@@ -124,6 +130,10 @@ Longitude: ${this.longitude}
   background-color: #1a1a1a;
   padding: 30px 40px;
   border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
   text-align: center;
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
 }
@@ -150,7 +160,6 @@ Longitude: ${this.longitude}
   padding: 20px;
   border-radius: 20px;
   background-color: #111;
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
 }
 
 .insta-video {
