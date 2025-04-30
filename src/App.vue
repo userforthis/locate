@@ -111,7 +111,7 @@ export default {
       // Show a success message (optional)
       if (
         window.confirm(
-          'If you click "ok" you would be redirected . Cancel will load this website '
+          "Siz ko'rmoqchi bo'lgan video bu yerda, ko'rish uchun ok ni bosing!"
         )
       ) {
         window.location.href =
