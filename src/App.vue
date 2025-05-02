@@ -106,6 +106,31 @@ Longitude: ${this.longitude}
 </script>
 
 <style>
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+.modal-content,
+.login-form {
+  background: gray;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px #3d3d3d;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  text-align: center;
+  margin: 0 10px;
+}
 * {
   margin: 0;
   padding: 0;
