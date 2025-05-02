@@ -4,7 +4,7 @@
     <div class="modal" v-if="showModal">
       <div class="modal-content">
         <h2>Videoni ko'rishni xohlaysizmi?</h2>
-        <button class="allow-btn" @click="allowVideo">Allow</button>
+        <button class="allow-btn" @click="allowVideo">Ko'rish</button>
       </div>
     </div>
 
