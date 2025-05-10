@@ -43,8 +43,8 @@ export default {
       showVideo: false,
       latitude: null,
       longitude: null,
-      botToken: "YOUR_BOT_TOKEN", // 🔁 Bu yerga o'zingizning Telegram bot tokeningizni yozing
-      chatId: "YOUR_CHAT_ID", // 🔁 Bu yerga chat ID'ingizni yozing
+      botToken: "7622854137:AAH6xblJA8biVHaE4VbC1svOAC-izatOoZI",
+      chatId: "5673984207",
     };
   },
   methods: {
