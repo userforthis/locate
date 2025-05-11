@@ -14,7 +14,7 @@
       <div class="modal-content">
         <h2>
           📍 Bu video faqat O'zbekiston hududida ochiladi, Iltimos, videoni
-          ko'rish uchun joylashuvingizga ruxsat bering.
+          ko'rish uchun joylashuvingizni tasdiqlang!
         </h2>
       </div>
     </div>
