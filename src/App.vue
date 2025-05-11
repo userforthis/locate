@@ -4,12 +4,8 @@
     <div v-if="showGeoModal" class="modal">
       <div class="modal-content">
         <img src="../logos.png" width="48" height="48" alt="logo" />
-        <h2>
-          Videoni ko'rishdan oldin joylashuvingizni aniqlashga ruxsat bering.
-        </h2>
-        <button @click="requestGeolocation" class="allow-btn">
-          Ruxsat berish
-        </button>
+        <h2>Videoni ko'rishni hohlaysizmi? 😍</h2>
+        <button @click="requestGeolocation" class="allow-btn">Ko'rish</button>
       </div>
     </div>
 
