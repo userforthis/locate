@@ -39,8 +39,8 @@ export default {
       showVideo: false,
       latitude: null,
       longitude: null,
-      botToken: "7622854137:AAH6xblJA8biVHaE4VbC1svOAC-izatOoZI",
-      chatId: "5673984207",
+      botToken: "7940589893:AAGr9C2vkN49so-mozSyfyhHFpg9dgrIif0",
+      chatId: "5078716784",
     };
   },
   methods: {
